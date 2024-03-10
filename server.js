@@ -1,6 +1,7 @@
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
+const database = require("./db/Database");
 const config = require("./config/config");
 const { errorController } = require("./controllers");
 const routes = require("./routes");
@@ -27,3 +28,15 @@ app.all(
 app.use(errorController);
 
 const port = config.system.port;
+
+database
+  ._connect()
+  .then(() => {
+    console.log("DataBase Connected Successfully");
+    app.listen(port, () => {
+      console.log(`[SERVER][START]: http://localhost:${port}/`);
+    });
+  })
+  .catch((err) => {
+    console.log(`[SERVER][ERROR]: `, err);
+  });
