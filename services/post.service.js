@@ -26,6 +26,46 @@ const getPosts = async (filters = {}) => {
   return Post.find(filters);
 };
 
+const totalPostEachUser = async () => {
+  const data = await Post.aggregate([
+    {
+      $group: { _id: "$postedBy", totalPosts: { $sum: 1 } },
+    },
+    {
+      $lookup: {
+        from: "users",
+        as: "postedBy",
+        let: { postedBy: "$_id" },
+        pipeline: [
+          {
+            $match: {
+              $expr: { $eq: ["$$postedBy", "$_id"] },
+            },
+          },
+          {
+            $project: {
+              Name: {
+                $concat: ["$firstName", " ", "$lastName"],
+              },
+              _id: 0,
+            },
+          },
+        ],
+      },
+    },
+    {
+      $project: {
+        _id: 0,
+        totalPosts: 1,
+        User: {
+          $first: "$postedBy.Name",
+        },
+      },
+    },
+  ]);
+  return data;
+};
+
 /**
  * Gets a single post by ID that matches the given filters.
  * @async
@@ -95,6 +135,7 @@ module.exports = {
   getPosts,
   getPostById,
   getPostByFilter,
+  totalPostEachUser,
   updatePost,
   deletePost,
 };

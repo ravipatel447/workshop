@@ -3,6 +3,7 @@ const { postService } = require("../services");
 const { postMessages } = require("../messages");
 const catchAsync = require("../utils/catchAsync");
 const response = require("../utils/response");
+const _ = require("lodash");
 
 const createPost = catchAsync(async (req, res) => {
   const post = await postService.createPost(req.body, req.user);
@@ -25,7 +26,13 @@ const getPosts = catchAsync(async (req, res) => {
 });
 
 const getMyPosts = catchAsync(async (req, res) => {
-  const myposts = await postService.getPosts({ postedBy: req.user._id });
+  const myposts = await req.user.populate({
+    path: "posts",
+    options: {
+      limit: parseInt(100),
+      skip: parseInt(0),
+    },
+  });
   return response.successResponse(
     res,
     httpStatus.OK,
@@ -36,6 +43,16 @@ const getMyPosts = catchAsync(async (req, res) => {
 
 const getPostsByUserId = catchAsync(async (req, res) => {
   const posts = await postService.getPosts({ postedBy: req.params.id });
+  return response.successResponse(
+    res,
+    httpStatus.OK,
+    { posts },
+    postMessages.success.POSTS_FETCH_SUCCESS
+  );
+});
+
+const getTotalpostsByEachUser = catchAsync(async (req, res) => {
+  const posts = await postService.totalPostEachUser();
   return response.successResponse(
     res,
     httpStatus.OK,
@@ -79,6 +96,7 @@ module.exports = {
   getPosts,
   getPostById,
   getMyPosts,
+  getTotalpostsByEachUser,
   getPostsByUserId,
   updateMyPost,
   deleteMyPost,

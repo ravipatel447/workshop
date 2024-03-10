@@ -5,7 +5,7 @@ const { postController } = require("../controllers");
 const auth = require("../middlewares/auth");
 const router = express.Router();
 
-router.get("/all", postController.getPosts);
+router.get("/each", postController.getTotalpostsByEachUser);
 router.get("/my", auth, postController.getMyPosts);
 router.get("/user/:id", postController.getPostsByUserId);
 router.get("/:id", postController.getPostById);
